@@ -20,36 +20,36 @@ class TransactionsRepository {
 
   public getBalance(): Balance {
 
-    var totalIncome = 0;
-    var totalOutcome = 0;
-    var total = 0;
+    const {income, outcome} = this.transactions.reduce(
+      (accumulator: Balance, transaction: Transaction) => {
+        switch (transaction.type) {
+          case 'income':
+            accumulator.income += transaction.value;
+            break;
+          case 'outcome':
+            accumulator.outcome += transaction.value;
+            break;
+          default:
+            break;
 
-    function somar(value: number, type: 'income' | 'outcome') {
-      if (type === "income") {
-        totalIncome = totalIncome + value;
-      }
-      else {
-        if (type === "outcome") {
-          totalOutcome = totalOutcome + value;
         }
-      }
-      total = totalIncome - totalOutcome;
-    }
-    this.transactions.forEach(trans => somar(trans.value, trans.type));
-    const balance: Balance = { income: totalIncome, outcome: totalOutcome, total: total };
+        return accumulator;
+      },
+      {
+        income:0,
+        outcome:0,
+        total:0,
+      },
+    );
+    const total = income-outcome;
 
-    return balance;
+    return {income, outcome, total};
 
   }
 
   public create(title: string, value: number, type: 'income' | 'outcome'): Transaction {
     const transaction = new Transaction({ title, value, type });
-    const balance =  this.getBalance();
 
-    if (type ==="outcome" && balance.total - value < 0)
-    {
-      throw Error ('Valor extrapola o saldo');
-    }
 
     this.transactions.push(transaction);
     return transaction;
